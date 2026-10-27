@@ -1,0 +1,171 @@
+/**:
+    ros__parameters:
+        use_imu_as_input: False                             # Point-LIO output model (required by the visual update)
+        prop_at_freq_of_imu: True
+        check_satu: True
+        init_map_size: 10
+        point_filter_num: 3
+        space_down_sample: True
+        filter_size_surf: 0.5
+        filter_size_map: 0.5
+        ivox_nearby_type: 6
+        runtime_pos_log_enable: True
+
+        common:
+            lid_topic: "/livox/lidar"
+            imu_topic: "/livox/imu"
+            con_frame: False
+            con_frame_num: 1
+            cut_frame: False
+            cut_frame_time_interval: 0.1
+            time_diff_lidar_to_imu: 0.0
+
+        prior_pcd:
+            enable: False
+            prior_pcd_map_path: ""
+            init_pose: [ 0.0, 0.0, 0.0 ]
+
+        preprocess:
+            lidar_type: 1                                   # 1 = Livox CustomMsg
+            scan_line: 6                                    # AVIA has 6 lines
+            timestamp_unit: 1
+            blind: 0.5
+            det_range: 200.0
+            tag_intensity_filter: false
+            min_intensity: 0.0
+
+        outlier_filter:
+            method: 0
+            voxel_res: 0.3
+            min_pts_per_voxel: 2
+            max_range: 10.0
+            radius: 0.5
+            min_neighbors: 3
+
+        mapping:
+            imu_en: True
+            extrinsic_est_en: False
+            imu_time_inte: 0.005                            # 200 Hz IMU
+            lidar_time_inte: 0.1                            # CBD_Building_01 emits 10 Hz scans
+            satu_acc: 3.0
+            satu_gyro: 35.0
+            acc_norm: 1.0                                   # AVIA internal IMU reports in g
+            lidar_meas_cov: 0.01
+            acc_cov_output: 500.0
+            gyr_cov_output: 1000.0
+            b_acc_cov: 0.0001
+            b_gyr_cov: 0.0001
+            imu_meas_acc_cov: 0.1
+            imu_meas_omg_cov: 0.1
+            gyr_cov_input: 0.01
+            acc_cov_input: 0.1
+            plane_thr: 0.1
+            match_s: 81.0
+            ivox_grid_resolution: 2.0
+            gravity: [ 0.0, 0.0, -9.810 ]
+            gravity_init: [ 0.0, 0.0, -9.810 ]
+            extrinsic_T: [ 0.04165, 0.02326, -0.0284 ]      # AVIA lidar-to-IMU extrinsics
+            extrinsic_R: [ 1.0, 0.0, 0.0,
+                           0.0, 1.0, 0.0,
+                           0.0, 0.0, 1.0 ]
+
+        odometry:
+            publish_odometry_without_downsample: False
+            imu_propagate_en: False
+
+        # FAST-LIVO2 CBD_Building_01 (== POINT-LIVO config/avia_retail.yaml +
+        # camera_pinhole_retail.yaml). Intrinsics are pre-scaled by 0.5
+        # (1293.57/1293.32/626.91/522.80 at 1280x1024 -> 646.78/646.66/313.46/261.40
+        # at 640x512). time_diff_cam_to_imu = -0.1 because image_cbk SUBTRACTS
+        # it while POINT-LIVO ADDS img_time_offset: 0.1.
+        camera:
+            enable: True
+            image_topic: "/left_camera/image"
+            camera_model: 0                                 # pinhole + radtan
+            width: 640
+            height: 512
+            scale: 0.5
+            fx: 646.78472
+            fy: 646.65775
+            cx: 313.456795
+            cy: 261.399612
+            dist_coeffs: [ -0.076160, 0.123001, -0.00113, 0.000251 ]
+            # Camera-in-IMU-body: R_cb = extR * Rcl^T, t_cb = extT - R_cb*Pcl
+            # (extR = I, Rcl/Pcl from avia_retail.yaml extrin_calib).
+            extrinsic_T: [ 0.06736994, 0.04124177, 0.07642167 ]
+            extrinsic_R: [ 0.00610193, -0.00615449, 0.999962,
+                           -0.999863, 0.0153796, 0.00619598,
+                           -0.0154172, -0.999863, -0.0060598 ]
+            time_diff_cam_to_imu: -0.1
+            exposure_time_init: 0.0
+            normal_en: True
+            inverse_composition_en: False
+            exposure_estimate_en: True
+            raycast_en: False
+            ncc_en: False
+            ncc_thre: 0.5
+            max_iterations: 5
+            grid_size: 5
+            grid_n_height: 17
+            patch_pyrimid_level: 4                          # FAST-LIVO2 avia config
+            patch_size: 8
+            img_point_cov: 100.0
+            outlier_threshold: 1000.0
+            inv_expo_cov: 0.1                               # FAST-LIVO2 avia config
+            exposure_cov_init: 0.01
+
+        # POINT-LIVO style colored cloud: project each accumulated world scan
+        # into the scan-synchronized image and publish/save as XYZRGB.
+        rgb_map:
+            enable: True
+            pub_scan_num: 1
+            blind_rgb_points: 0.0
+            filter_size_pcd: 0.15
+            save_raw: True
+            max_range: 0.0
+            interval: -1
+
+        loop_closure:
+            enable: True
+            keyframe_add_dist: 1.0
+            keyframe_add_angle: 0.2
+            search_radius: 10.0
+            search_time_diff: 30.0
+            search_num: 25
+            fitness_score: 0.3
+            icp_leaf_size: 0.4
+            keep_factors: true
+            opt_iters: 6
+            opt_iters_on_loop: 10
+            gnss_opt_every: 2
+            odom_sigma_rot: 0.05
+            odom_sigma_trans: 0.1
+
+        gnss:
+            enable: false
+            topic: "/gnss"
+            use_elevation: true
+            cov_threshold: 2.0
+            min_travel: 1.0
+            time_tol: 0.05
+            extrinsic_T: [ 0.0, 0.0, 0.0 ]
+            extrinsic_R: [ 1.0, 0.0, 0.0,
+                           0.0, 1.0, 0.0,
+                           0.0, 0.0, 1.0 ]
+
+        publish:
+            path_en: True
+            scan_publish_en: True
+            scan_bodyframe_pub_en: False
+            tf_send_en: True
+
+        scan_context:
+            max_height: 10.0e+9
+            
+        pcd_save:
+            pcd_save_en: True
+            # /var/opt/map (the default) is not writable on this machine; keep
+            # dataset-replay artefacts under the workspace instead.
+            output_dir: "/home/robot/slam_ws/replay_maps"
+            file_name: "fastlivo2_avia_map.pcd"
+            interval: -1

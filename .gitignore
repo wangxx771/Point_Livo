@@ -1,0 +1,28 @@
+# colcon 构建产物
+build/
+install/
+log/
+
+# 数据产物（GB 级，不进 git）
+*.bag
+bags/
+replay/
+maps/
+src/maps/
+PCD/
+
+# agibot 文档站生成输出
+agibot/site/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# 编辑器 / 系统
+.vscode/
+*.swp
+.DS_Store
+
+# Claude Code 本地配置
+.claude/
